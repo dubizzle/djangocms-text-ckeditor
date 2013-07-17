@@ -9,6 +9,12 @@ from djangocms_text_ckeditor.utils import static_url
 from cms.utils import cms_static_url
 from django.utils import simplejson
 
+if "django.contrib.staticfiles" in settings.INSTALLED_APPS:
+    from django.contrib.staticfiles.templatetags.staticfiles import static
+else:
+    static = lambda path: "".join([settings.STATIC_URL, path])
+
+
 class TextEditorWidget(Textarea):
     def __init__(self, attrs=None, installed_plugins=None, pk=None):
         """
@@ -29,7 +35,7 @@ class TextEditorWidget(Textarea):
             'name': name,
             'language': language,
             'settings': language.join(simplejson.dumps(text_settings.CKEDITOR_SETTINGS).split("{{ language }}")),
-            'STATIC_URL': settings.STATIC_URL,
+            'STATIC_URL': static(""),
             'installed_plugins': self.installed_plugins,
             'plugin_pk': self.pk,
         }
@@ -41,7 +47,7 @@ class TextEditorWidget(Textarea):
 
     class Media:
         css = {
-            'all': ('%scss/cms.ckeditor.css' % settings.STATIC_URL,)
+            'all': (static('css/cms.ckeditor.css'),)
         }
-        js = ('%sckeditor/ckeditor.js' % settings.STATIC_URL,
-              '%sjs/cms.ckeditor.js' % settings.STATIC_URL,)
+        js = (static('ckeditor/ckeditor.js'),
+              static('js/cms.ckeditor.js'),)
